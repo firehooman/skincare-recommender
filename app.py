@@ -5,7 +5,7 @@ import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 
-st.set_page_config(page_title="Skincare Recommender", page_icon="✿", layout="wide")
+st.set_page_config(page_title="Skincare Recommender", page_icon="૮₍␥ • ⩊ • ␥₎ა", layout="wide")
 
 SPARKLE_LINE = "⋆˚☆˖°⋆｡° ✮˖ ࣪ ⊹⋆.˚"
 HEART_LINE = "˖⁺‧₊˚♡˚₊‧⁺˖"
