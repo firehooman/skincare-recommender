@@ -10,6 +10,44 @@ st.set_page_config(page_title="Skincare Recommender", page_icon="🧴", layout="
 DATA_DIR = "data/processed"
 MODEL_DIR = "models"
 
+# ---------- Light custom styling on top of the theme in .streamlit/config.toml ----------
+st.markdown(
+    """
+    <style>
+    .hero {
+        padding: 1.75rem 2rem;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #F7DCD6 0%, #FBEFEC 100%);
+        margin-bottom: 1.5rem;
+    }
+    .hero h1 { margin-bottom: 0.25rem; }
+    .hero p { color: #6B5555; font-size: 1.05rem; margin: 0; }
+    .product-card {
+        border: 1px solid #EBDAD5;
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin-bottom: 0.8rem;
+        background-color: #FFFFFF;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .product-card h4 { margin: 0 0 0.15rem 0; }
+    .product-card .brand { color: #9A8888; font-size: 0.85rem; margin-bottom: 0.4rem; }
+    .badge {
+        display: inline-block;
+        padding: 0.15rem 0.6rem;
+        border-radius: 999px;
+        background-color: #FBEFEC;
+        color: #C97B84;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin-right: 0.4rem;
+    }
+    footer {visibility: hidden;}
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # ---------- Loaders (cached so files are only read/parsed once per session) ----------
 
@@ -38,62 +76,105 @@ def load_tfidf_vectorizer():
 
 @st.cache_resource
 def build_tfidf_matrix(_vectorizer, products_df):
-    # Recompute the TF-IDF matrix from the saved vectorizer + product text.
-    # This avoids having to ship a huge NxN cosine_sim_matrix.npy file.
     text_features = products_df["ingredients_text"] + " " + products_df["highlights_text"]
     return _vectorizer.transform(text_features)
 
 
-# ---------- Recommendation logic ----------
+# ---------- Recommendation logic (cached by input so repeat clicks are instant) ----------
 
-def recommend_content_based(product_name, products_df, tfidf_matrix, top_n=5):
+@st.cache_data
+def recommend_content_based(product_name, products_df, _tfidf_matrix, top_n=5):
     idx_matches = products_df[products_df["product_name"] == product_name].index
     if len(idx_matches) == 0:
         return None
     idx = idx_matches[0]
 
-    sim_scores = cosine_similarity(tfidf_matrix[idx], tfidf_matrix).flatten()
+    sim_scores = cosine_similarity(_tfidf_matrix[idx], _tfidf_matrix).flatten()
     ranked = sorted(enumerate(sim_scores), key=lambda x: x[1], reverse=True)
     ranked = [r for r in ranked if r[0] != idx][:top_n]
 
     result = products_df.iloc[[i for i, _ in ranked]][
         ["product_name", "brand_name", "secondary_category"]
     ].copy()
-    result["similarity"] = [round(s, 3) for _, s in ranked]
+    result["score"] = [round(s, 3) for _, s in ranked]
+    result["score_label"] = "Similarity"
     return result.reset_index(drop=True)
 
 
-def recommend_collaborative(author_id, algo, products_df, top_n=5):
+@st.cache_data
+def recommend_collaborative(author_id, _algo, products_df, top_n=5):
     scored = []
     for pid in products_df["product_id"]:
-        pred = algo.predict(author_id, pid)
+        pred = _algo.predict(author_id, pid)
         scored.append((pid, pred.est))
 
     scored.sort(key=lambda x: x[1], reverse=True)
     top = scored[:top_n]
 
-    top_df = pd.DataFrame(top, columns=["product_id", "predicted_rating"])
+    top_df = pd.DataFrame(top, columns=["product_id", "score"])
     result = top_df.merge(
         products_df[["product_id", "product_name", "brand_name", "secondary_category"]],
         on="product_id",
         how="left",
     )
-    result["predicted_rating"] = result["predicted_rating"].round(2)
-    return result[["product_name", "brand_name", "secondary_category", "predicted_rating"]]
+    result["score"] = result["score"].round(2)
+    result["score_label"] = "Predicted rating"
+    return result[["product_name", "brand_name", "secondary_category", "score", "score_label"]]
 
 
-# ---------- UI ----------
+def render_product_cards(df, columns=2):
+    if df is None or df.empty:
+        st.warning("Tidak ada rekomendasi ditemukan.")
+        return
 
-st.title("🧴 Sistem Rekomendasi Produk Skincare")
-st.caption(
-    "Final Project — Machine Learning | Content-Based Filtering (TF-IDF) "
-    "& Collaborative Filtering (SVD)"
+    cols = st.columns(columns)
+    for i, row in df.reset_index(drop=True).iterrows():
+        with cols[i % columns]:
+            st.markdown(
+                f"""
+                <div class="product-card">
+                    <h4>{row['product_name']}</h4>
+                    <div class="brand">{row['brand_name']}</div>
+                    <span class="badge">{row['secondary_category']}</span>
+                    <span class="badge">⭐ {row['score']} {row['score_label']}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+
+# ---------- Sidebar: project info + model performance ----------
+
+with st.sidebar:
+    st.header("📊 Tentang Model")
+    st.caption("Ringkasan performa model dari tahap evaluasi.")
+    c1, c2 = st.columns(2)
+    c1.metric("RMSE (test)", "0.95")
+    c2.metric("Precision@10", "0.72")
+    c1.metric("Overfit gap", "0.18", help="Selisih Train RMSE vs Test RMSE — makin kecil makin baik")
+    c2.metric("Model", "SVD")
+    st.divider()
+    st.markdown(
+        "**Dataset:** Sephora Products & Skincare Reviews (Kaggle)  \n"
+        "**Metode:** Content-Based (TF-IDF) & Collaborative Filtering (SVD)"
+    )
+
+# ---------- Hero header ----------
+
+st.markdown(
+    """
+    <div class="hero">
+        <h1>🧴 Skincare Recommender</h1>
+        <p>Temukan produk skincare yang cocok — berdasarkan kandungan bahan, atau berdasarkan pola rating pengguna lain.</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 products = load_products()
 
 tab1, tab2 = st.tabs(
-    ["🔍 Rekomendasi Berdasarkan Produk", "👤 Rekomendasi Personalized (User)"]
+    ["🔍  Berdasarkan Produk", "👤  Personalized (User)"]
 )
 
 with tab1:
@@ -101,17 +182,17 @@ with tab1:
     tfidf_vectorizer = load_tfidf_vectorizer()
     tfidf_matrix = build_tfidf_matrix(tfidf_vectorizer, products)
 
-    product_choice = st.selectbox(
-        "Pilih produk favoritmu:", products["product_name"].sort_values().unique()
-    )
-    top_n_cb = st.slider("Jumlah rekomendasi", 3, 10, 5, key="cb_slider")
+    col_a, col_b = st.columns([3, 1])
+    with col_a:
+        product_choice = st.selectbox(
+            "Pilih produk favoritmu:", products["product_name"].sort_values().unique()
+        )
+    with col_b:
+        top_n_cb = st.slider("Jumlah", 3, 10, 5, key="cb_slider")
 
-    if st.button("Cari Produk Mirip"):
+    if st.button("🔍 Cari Produk Mirip", use_container_width=True):
         result = recommend_content_based(product_choice, products, tfidf_matrix, top_n=top_n_cb)
-        if result is None:
-            st.warning("Produk tidak ditemukan.")
-        else:
-            st.dataframe(result, use_container_width=True)
+        render_product_cards(result)
 
 with tab2:
     st.subheader("Rekomendasi personal berdasarkan riwayat rating pengguna")
@@ -123,16 +204,19 @@ with tab2:
     svd_model = load_svd_model()
     sample_users = load_sample_users()
 
-    user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
-    top_n_cf = st.slider("Jumlah rekomendasi", 3, 10, 5, key="cf_slider")
+    col_a, col_b = st.columns([3, 1])
+    with col_a:
+        user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
+    with col_b:
+        top_n_cf = st.slider("Jumlah", 3, 10, 5, key="cf_slider")
 
-    if st.button("Buat Rekomendasi"):
+    if st.button("✨ Buat Rekomendasi", use_container_width=True):
         with st.spinner("Menghitung rekomendasi..."):
             result = recommend_collaborative(user_choice, svd_model, products, top_n=top_n_cf)
-        st.dataframe(result, use_container_width=True)
+        render_product_cards(result)
 
 st.divider()
 st.caption(
-    "Model: SVD (Collaborative Filtering) + TF-IDF Cosine Similarity (Content-Based) | "
-    "Dataset: Sephora Products and Skincare Reviews (Kaggle)"
+    "Final Project Machine Learning — SVD (Collaborative Filtering) + "
+    "TF-IDF Cosine Similarity (Content-Based)"
 )
