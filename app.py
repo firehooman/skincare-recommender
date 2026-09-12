@@ -81,6 +81,11 @@ def load_sample_users():
     return pd.read_parquet(os.path.join(DATA_DIR, "sample_users.parquet"))
 
 
+@st.cache_data
+def load_skin_stats():
+    return pd.read_parquet(os.path.join(DATA_DIR, "product_skin_type_stats.parquet"))
+
+
 @st.cache_resource
 def load_svd_model():
     with open(os.path.join(MODEL_DIR, "svd_model.pkl"), "rb") as f:
@@ -141,6 +146,25 @@ def recommend_collaborative(author_id, _algo, products_df, top_n=5):
     return result[["product_name", "brand_name", "secondary_category", "score", "score_label"]]
 
 
+@st.cache_data
+def recommend_by_skin_type(skin_type, category, products_df, skin_stats_df, top_n=5):
+    filtered = skin_stats_df[skin_stats_df["skin_type"] == skin_type]
+
+    result = filtered.merge(
+        products_df[["product_id", "product_name", "brand_name", "secondary_category"]],
+        on="product_id",
+        how="left",
+    )
+
+    if category != "Semua Kategori":
+        result = result[result["secondary_category"] == category]
+
+    result = result.sort_values(["avg_rating", "review_count"], ascending=False).head(top_n)
+    result["score"] = result["avg_rating"].round(2)
+    result["score_label"] = f"Avg rating ({skin_type})"
+    return result[["product_name", "brand_name", "secondary_category", "score", "score_label"]]
+
+
 def render_product_cards(df, columns=2):
     if df is None or df.empty:
         st.warning("Tidak ada rekomendasi ditemukan.")
@@ -195,8 +219,8 @@ st.markdown(
 
 products = load_products()
 
-tab1, tab2 = st.tabs(
-    ["Berdasarkan Produk", "Personalized (User)"]
+tab1, tab2, tab3 = st.tabs(
+    ["Berdasarkan Produk", "Personalized (User)", "Berdasarkan Jenis Kulit"]
 )
 
 with tab1:
@@ -237,6 +261,32 @@ with tab2:
     if st.button("Buat Rekomendasi", use_container_width=True):
         with st.spinner("Menghitung rekomendasi..."):
             result = recommend_collaborative(user_choice, svd_model, products, top_n=top_n_cf)
+        render_product_cards(result)
+
+with tab3:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+    st.subheader("Cocok untuk pemula: pilih jenis kulitmu")
+    st.caption(
+        "Menampilkan produk dengan rating tertinggi dari pengguna lain yang punya "
+        "jenis kulit sama denganmu."
+    )
+
+    skin_stats = load_skin_stats()
+    skin_type_options = sorted(skin_stats["skin_type"].dropna().unique().tolist())
+    category_options = ["Semua Kategori"] + sorted(products["secondary_category"].dropna().unique().tolist())
+
+    col_a, col_b, col_c = st.columns([2, 2, 1])
+    with col_a:
+        skin_type_choice = st.selectbox("Jenis kulitmu:", skin_type_options)
+    with col_b:
+        category_choice = st.selectbox("Kategori produk (opsional):", category_options)
+    with col_c:
+        top_n_skin = st.slider("Jumlah", 3, 10, 5, key="skin_slider")
+
+    if st.button("Cari Produk untuk Jenis Kulitku", use_container_width=True):
+        result = recommend_by_skin_type(
+            skin_type_choice, category_choice, products, skin_stats, top_n=top_n_skin
+        )
         render_product_cards(result)
 
 st.markdown(
