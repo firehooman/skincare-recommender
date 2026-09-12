@@ -5,7 +5,11 @@ import pandas as pd
 import streamlit as st
 from sklearn.metrics.pairwise import cosine_similarity
 
-st.set_page_config(page_title="Skincare Recommender", page_icon="🧴", layout="wide")
+st.set_page_config(page_title="Skincare Recommender", page_icon="✿", layout="wide")
+
+SPARKLE_LINE = "⋆˚☆˖°⋆｡° ✮˖ ࣪ ⊹⋆.˚"
+HEART_LINE = "˖⁺‧₊˚♡˚₊‧⁺˖"
+FLOWER = "⋆˚✿˖°"
 
 DATA_DIR = "data/processed"
 MODEL_DIR = "models"
@@ -22,6 +26,21 @@ st.markdown(
     }
     .hero h1 { margin-bottom: 0.25rem; }
     .hero p { color: #6B5555; font-size: 1.05rem; margin: 0; }
+    .sparkle-top, .sparkle-bottom {
+        text-align: center;
+        color: #C97B84;
+        letter-spacing: 0.15em;
+        font-size: 0.95rem;
+        margin: 0;
+    }
+    .sparkle-top { margin-bottom: 0.3rem; }
+    .sparkle-bottom { margin-top: 0.3rem; }
+    .section-flourish {
+        color: #C97B84;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 0.2rem;
+    }
     .product-card {
         border: 1px solid #EBDAD5;
         border-radius: 14px;
@@ -136,7 +155,7 @@ def render_product_cards(df, columns=2):
                     <h4>{row['product_name']}</h4>
                     <div class="brand">{row['brand_name']}</div>
                     <span class="badge">{row['secondary_category']}</span>
-                    <span class="badge">⭐ {row['score']} {row['score_label']}</span>
+                    <span class="badge">★ {row['score']} {row['score_label']}</span>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -146,14 +165,15 @@ def render_product_cards(df, columns=2):
 # ---------- Sidebar: project info + model performance ----------
 
 with st.sidebar:
-    st.header("📊 Tentang Model")
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+    st.header("Tentang Model")
     st.caption("Ringkasan performa model dari tahap evaluasi.")
     c1, c2 = st.columns(2)
     c1.metric("RMSE (test)", "0.95")
     c2.metric("Precision@10", "0.72")
     c1.metric("Overfit gap", "0.18", help="Selisih Train RMSE vs Test RMSE — makin kecil makin baik")
     c2.metric("Model", "SVD")
-    st.divider()
+    st.markdown(f'<p style="text-align:center;color:#C97B84;">{HEART_LINE}</p>', unsafe_allow_html=True)
     st.markdown(
         "**Dataset:** Sephora Products & Skincare Reviews (Kaggle)  \n"
         "**Metode:** Content-Based (TF-IDF) & Collaborative Filtering (SVD)"
@@ -162,11 +182,13 @@ with st.sidebar:
 # ---------- Hero header ----------
 
 st.markdown(
-    """
+    f"""
+    <p class="sparkle-top">{SPARKLE_LINE}</p>
     <div class="hero">
-        <h1>🧴 Skincare Recommender</h1>
-        <p>Temukan produk skincare yang cocok — berdasarkan kandungan bahan, atau berdasarkan pola rating pengguna lain.</p>
+        <h1 style="text-align:center;">Skincare Recommender</h1>
+        <p style="text-align:center;">Temukan produk skincare yang cocok — berdasarkan kandungan bahan, atau berdasarkan pola rating pengguna lain.</p>
     </div>
+    <p class="sparkle-bottom">{HEART_LINE}</p>
     """,
     unsafe_allow_html=True,
 )
@@ -174,10 +196,11 @@ st.markdown(
 products = load_products()
 
 tab1, tab2 = st.tabs(
-    ["🔍  Berdasarkan Produk", "👤  Personalized (User)"]
+    ["Berdasarkan Produk", "Personalized (User)"]
 )
 
 with tab1:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
     st.subheader("Cari produk yang mirip berdasarkan kandungan bahan & highlight")
     tfidf_vectorizer = load_tfidf_vectorizer()
     tfidf_matrix = build_tfidf_matrix(tfidf_vectorizer, products)
@@ -190,11 +213,12 @@ with tab1:
     with col_b:
         top_n_cb = st.slider("Jumlah", 3, 10, 5, key="cb_slider")
 
-    if st.button("🔍 Cari Produk Mirip", use_container_width=True):
+    if st.button("Cari Produk Mirip", use_container_width=True):
         result = recommend_content_based(product_choice, products, tfidf_matrix, top_n=top_n_cb)
         render_product_cards(result)
 
 with tab2:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
     st.subheader("Rekomendasi personal berdasarkan riwayat rating pengguna")
     st.caption(
         "Demo memakai sampel user_id dari data training — model SVD hanya bisa "
@@ -210,13 +234,18 @@ with tab2:
     with col_b:
         top_n_cf = st.slider("Jumlah", 3, 10, 5, key="cf_slider")
 
-    if st.button("✨ Buat Rekomendasi", use_container_width=True):
+    if st.button("Buat Rekomendasi", use_container_width=True):
         with st.spinner("Menghitung rekomendasi..."):
             result = recommend_collaborative(user_choice, svd_model, products, top_n=top_n_cf)
         render_product_cards(result)
 
-st.divider()
-st.caption(
-    "Final Project Machine Learning — SVD (Collaborative Filtering) + "
-    "TF-IDF Cosine Similarity (Content-Based)"
+st.markdown(
+    f"""
+    <p style="text-align:center;color:#C97B84;letter-spacing:0.15em;margin-top:1.5rem;">{SPARKLE_LINE}</p>
+    <p style="text-align:center;color:#9A8888;font-size:0.85rem;">
+        Final Project Machine Learning — SVD (Collaborative Filtering) +
+        TF-IDF Cosine Similarity (Content-Based)
+    </p>
+    """,
+    unsafe_allow_html=True,
 )
