@@ -10,6 +10,53 @@ st.set_page_config(page_title="Skincare Recommender", page_icon="૮₍␥ • �
 SPARKLE_LINE = "⋆˚☆˖°⋆｡° ✮˖ ࣪ ⊹⋆.˚"
 HEART_LINE = "˖⁺‧₊˚♡˚₊‧⁺˖"
 FLOWER = "⋆˚✿˖°"
+CAT_FACE = "૮₍ •⩊ •₎ა"
+
+QUIZ_QUESTIONS = [
+    {
+        "prompt": "Beberapa jam setelah cuci muka, kulitmu terasa...",
+        "options": [
+            ("Kering dan sedikit ketarik", "dry"),
+            ("Berminyak, terutama di dahi & hidung", "oily"),
+            ("Berminyak di zona T, tapi kering di pipi", "combination"),
+            ("Nyaman, tidak kering atau berminyak", "normal"),
+        ],
+    },
+    {
+        "prompt": "Seberapa sering kamu berjerawat atau berkomedo?",
+        "options": [
+            ("Sering, hampir di seluruh wajah", "oily"),
+            ("Jarang sekali", "dry"),
+            ("Kadang muncul, tapi cuma di area tertentu", "combination"),
+            ("Sesekali, tidak terlalu mengganggu", "normal"),
+        ],
+    },
+    {
+        "prompt": "Bagaimana ukuran pori-pori di wajahmu?",
+        "options": [
+            ("Besar dan terlihat jelas, terutama di hidung", "oily"),
+            ("Kecil, hampir tidak terlihat", "dry"),
+            ("Bervariasi antar area wajah", "combination"),
+            ("Halus dan cenderung merata", "normal"),
+        ],
+    },
+    {
+        "prompt": "Setelah seharian tanpa pakai skincare apapun, wajahmu jadi...",
+        "options": [
+            ("Kaku, kadang sedikit mengelupas", "dry"),
+            ("Mengkilap di seluruh wajah", "oily"),
+            ("Mengkilap di dahi/hidung, biasa saja di pipi", "combination"),
+            ("Baik-baik saja, tidak ada masalah berarti", "normal"),
+        ],
+    },
+]
+
+SKIN_TYPE_LABELS = {
+    "dry": "Kulit Kering",
+    "oily": "Kulit Berminyak",
+    "combination": "Kulit Kombinasi",
+    "normal": "Kulit Normal",
+}
 
 DATA_DIR = "data/processed"
 MODEL_DIR = "models"
@@ -41,6 +88,21 @@ st.markdown(
         letter-spacing: 0.1em;
         margin-bottom: 0.2rem;
     }
+    .cat-face {
+        text-align: center;
+        font-size: 3.5rem;
+        color: #C97B84;
+        margin: 0.5rem 0 0.2rem 0;
+    }
+    .quiz-result {
+        text-align: center;
+        border: 1px solid #EBDAD5;
+        border-radius: 14px;
+        padding: 1.2rem;
+        background-color: #FBEFEC;
+        margin-top: 1rem;
+    }
+    .quiz-result h3 { color: #C97B84; margin-bottom: 0.2rem; }
     .product-card {
         border: 1px solid #EBDAD5;
         border-radius: 14px;
@@ -219,8 +281,8 @@ st.markdown(
 
 products = load_products()
 
-tab1, tab2, tab3 = st.tabs(
-    ["Berdasarkan Produk", "Personalized (User)", "Berdasarkan Jenis Kulit"]
+tab1, tab2, tab3, tab4 = st.tabs(
+    ["Berdasarkan Produk", "Personalized (User)", "Berdasarkan Jenis Kulit", "Kenali Jenis Kulitmu"]
 )
 
 with tab1:
@@ -288,6 +350,43 @@ with tab3:
             skin_type_choice, category_choice, products, skin_stats, top_n=top_n_skin
         )
         render_product_cards(result)
+
+with tab4:
+    st.markdown(f'<div class="cat-face">{CAT_FACE}</div>', unsafe_allow_html=True)
+    st.markdown(
+        '<p style="text-align:center;color:#6B5555;">Belum tahu jenis kulitmu? '
+        "Jawab pertanyaan singkat ini dulu, yuk!</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(f'<p class="sparkle-bottom">{HEART_LINE}</p>', unsafe_allow_html=True)
+
+    answers = []
+    for i, q in enumerate(QUIZ_QUESTIONS):
+        st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+        choice = st.radio(
+            q["prompt"],
+            options=q["options"],
+            format_func=lambda opt: opt[0],
+            key=f"quiz_q{i}",
+        )
+        answers.append(choice[1])
+
+    if st.button("Cek Jenis Kulitku", use_container_width=True):
+        tally = pd.Series(answers).value_counts()
+        result_type = tally.idxmax()
+        result_label = SKIN_TYPE_LABELS.get(result_type, result_type)
+
+        st.markdown(
+            f"""
+            <div class="quiz-result">
+                <div class="cat-face" style="font-size:2.2rem;">{CAT_FACE}</div>
+                <h3>{result_label}</h3>
+                <p style="color:#6B5555;">Coba cek tab <b>"Berdasarkan Jenis Kulit"</b> dan pilih
+                <b>{result_type}</b> untuk lihat produk yang paling cocok!</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 st.markdown(
     f"""
