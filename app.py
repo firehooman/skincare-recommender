@@ -403,14 +403,13 @@ with tab3:
 
     col_a, col_b = st.columns([3, 1])
     with col_a:
-        display_choice = st.selectbox("Pilih contoh pengguna:", sample_users["display_name"].tolist())
+        user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
     with col_b:
         top_n_cf = st.slider("Jumlah", 3, 10, 5, key="cf_slider")
 
-    selected_user = sample_users[sample_users["display_name"] == display_choice].iloc[0]
-    user_choice = selected_user["author_id"]
+    selected_user = sample_users[sample_users["author_id"] == user_choice].iloc[0]
     user_skin_label = SKIN_TYPE_LABELS.get(selected_user["skin_type"], "Tidak diketahui")
-    st.caption(f"Kondisi kulit **{display_choice}**: **{user_skin_label}**")
+    st.caption(f"Kondisi kulit pengguna ini: **{user_skin_label}**")
 
     if st.button("Buat Rekomendasi", use_container_width=True):
         with st.spinner("Menghitung rekomendasi..."):
