@@ -401,6 +401,8 @@ with tab3:
     svd_model = load_svd_model()
     sample_users = load_sample_users()
 
+    st.info(f"DEBUG — kolom yang terbaca: {sample_users.columns.tolist()}")
+
     col_a, col_b = st.columns([3, 1])
     with col_a:
         user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
