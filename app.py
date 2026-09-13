@@ -162,7 +162,8 @@ st.markdown(
     }
     footer {visibility: hidden;}
     .stTabs [data-baseweb="tab-list"] {
-        justify-content: center;
+        justify-content: center !important;
+        width: 100% !important;
     }
     </style>
     """,
