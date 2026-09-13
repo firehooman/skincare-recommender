@@ -58,6 +58,28 @@ SKIN_TYPE_LABELS = {
     "normal": "Kulit Normal",
 }
 
+SIDE_ART = r"""⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣤⣤⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢠⣿⠋⠀⠀⠙⢿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣸⡇⠀⠀⠀⠀⠀⠙⢿⣦⡀⠀⠀⢀⣀⣀⣠⣤⣀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⣿⠇⠀⠀⠀⠀⠀⠀⠀⠙⠿⠿⠟⠛⠛⠋⠉⠉⠛⣷⡄
+⠀⠀⠀⠀⠀⠀⠀⢠⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇
+⠀⠀⠀⠀⣀⣤⣶⠿⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡿⠃
+⠀⣠⣶⠿⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⡿⠃⠀
+⢸⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡿⠁⠀⠀
+⢸⣧⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⡀⠀⠀
+⠀⠙⠿⣶⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣷⡄⠀
+⠀⠀⠀⠀⠉⠛⠿⣶⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⡄
+⠀⠀⠀⠀⠀⠀⠀⠘⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡇
+⠀⠀⠀⠀⠀⠀⠀⠀⣿⡆⠀⠀⠀⠀⠀⠀⠀⣠⣶⣶⣦⣤⣤⣄⣀⣀⣤⡿⠃
+⠀⠀⠀⠀⠀⠀⠀⠀⢹⡇⠀⠀⠀⠀⠀⣠⣾⠏⠀⠀⠀⠈⠉⠉⠙⠛⠉⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣄⠀⠀⣠⣾⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠛⠛⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"""
+
+CUTE_ART = r"""   /ᐢ⑅ᐢ\   ♡   ₊˚
+꒰ ˶• ༝ •˶꒱       ♡‧₊˚    ♡
+./づ~ :¨·.·¨:     ₊˚
+           `·..·‘    ₊˚   ♡"""
+
 DATA_DIR = "data/processed"
 MODEL_DIR = "models"
 
@@ -103,6 +125,25 @@ st.markdown(
         margin-top: 1rem;
     }
     .quiz-result h3 { color: #C97B84; margin-bottom: 0.2rem; }
+    .ascii-art {
+        white-space: pre;
+        font-family: monospace;
+        line-height: 1;
+        font-size: 0.45rem;
+        color: #C97B84;
+        text-align: center;
+        overflow-x: auto;
+        margin: 0.5rem 0;
+    }
+    .cute-art {
+        white-space: pre;
+        font-family: monospace;
+        line-height: 1.3;
+        font-size: 0.8rem;
+        color: #C97B84;
+        text-align: center;
+        margin: 1rem 0;
+    }
     .product-card {
         border: 1px solid #EBDAD5;
         border-radius: 14px;
@@ -264,6 +305,7 @@ with st.sidebar:
         "**Dataset:** Sephora Products & Skincare Reviews (Kaggle)  \n"
         "**Metode:** Content-Based (TF-IDF) & Collaborative Filtering (SVD)"
     )
+    st.markdown(f'<div class="ascii-art">{SIDE_ART}</div>', unsafe_allow_html=True)
 
 # ---------- Hero header ----------
 
@@ -282,76 +324,10 @@ st.markdown(
 products = load_products()
 
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Berdasarkan Produk", "Personalized (User)", "Berdasarkan Jenis Kulit", "Kenali Jenis Kulitmu"]
+    ["Kenali Jenis Kulitmu", "Berdasarkan Jenis Kulit", "Personalized (User)", "Berdasarkan Produk"]
 )
 
 with tab1:
-    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
-    st.subheader("Cari produk yang mirip berdasarkan kandungan bahan & highlight")
-    tfidf_vectorizer = load_tfidf_vectorizer()
-    tfidf_matrix = build_tfidf_matrix(tfidf_vectorizer, products)
-
-    col_a, col_b = st.columns([3, 1])
-    with col_a:
-        product_choice = st.selectbox(
-            "Pilih produk favoritmu:", products["product_name"].sort_values().unique()
-        )
-    with col_b:
-        top_n_cb = st.slider("Jumlah", 3, 10, 5, key="cb_slider")
-
-    if st.button("Cari Produk Mirip", use_container_width=True):
-        result = recommend_content_based(product_choice, products, tfidf_matrix, top_n=top_n_cb)
-        render_product_cards(result)
-
-with tab2:
-    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
-    st.subheader("Rekomendasi personal berdasarkan riwayat rating pengguna")
-    st.caption(
-        "Demo memakai sampel user_id dari data training — model SVD hanya bisa "
-        "memprediksi untuk user yang sudah ada di data training (bukan user baru)."
-    )
-
-    svd_model = load_svd_model()
-    sample_users = load_sample_users()
-
-    col_a, col_b = st.columns([3, 1])
-    with col_a:
-        user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
-    with col_b:
-        top_n_cf = st.slider("Jumlah", 3, 10, 5, key="cf_slider")
-
-    if st.button("Buat Rekomendasi", use_container_width=True):
-        with st.spinner("Menghitung rekomendasi..."):
-            result = recommend_collaborative(user_choice, svd_model, products, top_n=top_n_cf)
-        render_product_cards(result)
-
-with tab3:
-    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
-    st.subheader("Cocok untuk pemula: pilih jenis kulitmu")
-    st.caption(
-        "Menampilkan produk dengan rating tertinggi dari pengguna lain yang punya "
-        "jenis kulit sama denganmu."
-    )
-
-    skin_stats = load_skin_stats()
-    skin_type_options = sorted(skin_stats["skin_type"].dropna().unique().tolist())
-    category_options = ["Semua Kategori"] + sorted(products["secondary_category"].dropna().unique().tolist())
-
-    col_a, col_b, col_c = st.columns([2, 2, 1])
-    with col_a:
-        skin_type_choice = st.selectbox("Jenis kulitmu:", skin_type_options)
-    with col_b:
-        category_choice = st.selectbox("Kategori produk (opsional):", category_options)
-    with col_c:
-        top_n_skin = st.slider("Jumlah", 3, 10, 5, key="skin_slider")
-
-    if st.button("Cari Produk untuk Jenis Kulitku", use_container_width=True):
-        result = recommend_by_skin_type(
-            skin_type_choice, category_choice, products, skin_stats, top_n=top_n_skin
-        )
-        render_product_cards(result)
-
-with tab4:
     st.markdown(f'<div class="cat-face">{CAT_FACE}</div>', unsafe_allow_html=True)
     st.markdown(
         '<p style="text-align:center;color:#6B5555;">Belum tahu jenis kulitmu? '
@@ -388,9 +364,81 @@ with tab4:
             unsafe_allow_html=True,
         )
 
+with tab2:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+    st.subheader("Cocok untuk pemula: pilih jenis kulitmu")
+    st.caption(
+        "Menampilkan produk dengan rating tertinggi dari pengguna lain yang punya "
+        "jenis kulit sama denganmu."
+    )
+
+    skin_stats = load_skin_stats()
+    skin_type_options = sorted(skin_stats["skin_type"].dropna().unique().tolist())
+    category_options = ["Semua Kategori"] + sorted(products["secondary_category"].dropna().unique().tolist())
+
+    col_a, col_b, col_c = st.columns([2, 2, 1])
+    with col_a:
+        skin_type_choice = st.selectbox("Jenis kulitmu:", skin_type_options)
+    with col_b:
+        category_choice = st.selectbox("Kategori produk (opsional):", category_options)
+    with col_c:
+        top_n_skin = st.slider("Jumlah", 3, 10, 5, key="skin_slider")
+
+    if st.button("Cari Produk untuk Jenis Kulitku", use_container_width=True):
+        result = recommend_by_skin_type(
+            skin_type_choice, category_choice, products, skin_stats, top_n=top_n_skin
+        )
+        render_product_cards(result)
+
+with tab3:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+    st.subheader("Rekomendasi personal berdasarkan riwayat rating pengguna")
+    st.caption(
+        "Demo memakai sampel pengguna dari data training — model SVD hanya bisa "
+        "memprediksi untuk pengguna yang sudah ada di data training (bukan pengguna baru)."
+    )
+
+    svd_model = load_svd_model()
+    sample_users = load_sample_users()
+
+    col_a, col_b = st.columns([3, 1])
+    with col_a:
+        display_choice = st.selectbox("Pilih contoh pengguna:", sample_users["display_name"].tolist())
+    with col_b:
+        top_n_cf = st.slider("Jumlah", 3, 10, 5, key="cf_slider")
+
+    selected_user = sample_users[sample_users["display_name"] == display_choice].iloc[0]
+    user_choice = selected_user["author_id"]
+    user_skin_label = SKIN_TYPE_LABELS.get(selected_user["skin_type"], "Tidak diketahui")
+    st.caption(f"Kondisi kulit **{display_choice}**: **{user_skin_label}**")
+
+    if st.button("Buat Rekomendasi", use_container_width=True):
+        with st.spinner("Menghitung rekomendasi..."):
+            result = recommend_collaborative(user_choice, svd_model, products, top_n=top_n_cf)
+        render_product_cards(result)
+
+with tab4:
+    st.markdown(f'<div class="section-flourish">{FLOWER}</div>', unsafe_allow_html=True)
+    st.subheader("Cari produk yang mirip berdasarkan kandungan bahan & highlight")
+    tfidf_vectorizer = load_tfidf_vectorizer()
+    tfidf_matrix = build_tfidf_matrix(tfidf_vectorizer, products)
+
+    col_a, col_b = st.columns([3, 1])
+    with col_a:
+        product_choice = st.selectbox(
+            "Pilih produk favoritmu:", products["product_name"].sort_values().unique()
+        )
+    with col_b:
+        top_n_cb = st.slider("Jumlah", 3, 10, 5, key="cb_slider")
+
+    if st.button("Cari Produk Mirip", use_container_width=True):
+        result = recommend_content_based(product_choice, products, tfidf_matrix, top_n=top_n_cb)
+        render_product_cards(result)
+
 st.markdown(
     f"""
     <p style="text-align:center;color:#C97B84;letter-spacing:0.15em;margin-top:1.5rem;">{SPARKLE_LINE}</p>
+    <div class="cute-art">{CUTE_ART}</div>
     <p style="text-align:center;color:#9A8888;font-size:0.85rem;">
         Final Project Machine Learning — SVD (Collaborative Filtering) +
         TF-IDF Cosine Similarity (Content-Based)
