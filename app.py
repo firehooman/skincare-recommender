@@ -75,10 +75,15 @@ SIDE_ART = r"""⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣤⣤⣤⡀⠀⠀⠀⠀⠀⠀�
 ⠀⠀⠀⠀⠀⠀⠀⠀⠘⣿⣄⠀⠀⣠⣾⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠛⠛⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"""
 
-CUTE_ART = r"""   /ᐢ⑅ᐢ\   ♡   ₊˚
-꒰ ˶• ༝ •˶꒱       ♡‧₊˚    ♡
-./づ~ :¨·.·¨:     ₊˚
-           `·..·‘    ₊˚   ♡"""
+FOOTER_ART = r"""⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣎⠱⣲⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠤⠒⠒⠒⠒⠤⢄⣈⠈⠁⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢀⡤⠒⠝⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠲⢄⡀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⢀⡴⠋⠀⠀⠀⠀⣀⠀⠀⠀⠀⠀⠀⢠⣢⠐⡄⠀⠉⠑⠒⠒⠒⣄
+⠀⠀⠀⣀⠴⠋⠀⠀⠀⡎⢀⣘⠿⠀⠀⢠⣀⢄⡦⠀⣛⣐⢸⠀⠀⠀⠀⠀⠀⢘
+⡠⠒⠉⠀⠀⠀⠀⠀⡰⢅⠣⠤⠘⠀⠀⠀⠀⠀⠀⢀⣀⣤⡋⠙⠢⢄⣀⣀⡠⠊
+⢇⠀⠀⠀⠀⠀⢀⠜⠁⠀⠉⡕⠒⠒⠒⠒⠒⠛⠉⠹⡄⣀⠘⡄⠀⠀⠀⠀⠀⠀
+⠀⠑⠂⠤⠔⠒⠁⠀⠀⡎⠱⡃⠀⠀⡄⠀⠄⠀⠀⠠⠟⠉⡷⠁⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠹⠤⠤⠴⣄⡸⠤⣄⠴⠤⠴⠄⠼⠀⠀⠀⠀⠀⠀⠀⠀"""
 
 DATA_DIR = "data/processed"
 MODEL_DIR = "models"
@@ -134,15 +139,6 @@ st.markdown(
         text-align: center;
         overflow-x: auto;
         margin: 0.5rem 0;
-    }
-    .cute-art {
-        white-space: pre;
-        font-family: monospace;
-        line-height: 1.3;
-        font-size: 0.8rem;
-        color: #C97B84;
-        text-align: center;
-        margin: 1rem 0;
     }
     .product-card {
         border: 1px solid #EBDAD5;
@@ -401,8 +397,6 @@ with tab3:
     svd_model = load_svd_model()
     sample_users = load_sample_users()
 
-    st.info(f"DEBUG — kolom yang terbaca: {sample_users.columns.tolist()}")
-
     col_a, col_b = st.columns([3, 1])
     with col_a:
         user_choice = st.selectbox("Pilih contoh User ID:", sample_users["author_id"].tolist())
@@ -438,8 +432,7 @@ with tab4:
 
 st.markdown(
     f"""
-    <p style="text-align:center;color:#C97B84;letter-spacing:0.15em;margin-top:1.5rem;">{SPARKLE_LINE}</p>
-    <div class="cute-art">{CUTE_ART}</div>
+    <div class="ascii-art">{FOOTER_ART}</div>
     <p style="text-align:center;color:#9A8888;font-size:0.85rem;">
         Final Project Machine Learning — SVD (Collaborative Filtering) +
         TF-IDF Cosine Similarity (Content-Based)
